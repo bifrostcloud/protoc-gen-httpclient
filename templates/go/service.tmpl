@@ -1,4 +1,4 @@
-{{ define "Service_go" }}
+{{ define "Service" }}
 {{ $upperCamelCaseServiceName := .UpperCamelCaseServiceName }}
 {{ $auth := .Auth }}
 	{{if eq $auth "basic"}}
@@ -17,6 +17,6 @@
 	{{end}}
 
 {{ range .Methods -}}
- {{ template "Method_go" . }}
+ {{ template "Method" . }}
 {{end}}
 {{ end }}

@@ -2,29 +2,29 @@
 package example
 
 import (
-	"strings"
+	cb "github.com/bifrostcloud/protoc-gen-httpclient/pkg/go/client/circuit-breaker"
+
+	"io"
+
+	"net/url"
 
 	basic "github.com/bifrostcloud/protoc-gen-httpclient/pkg/go/client/basic"
+
+	"net/http"
 
 	stacktrace "github.com/palantir/stacktrace"
 
 	utils "github.com/bifrostcloud/protoc-gen-httpclient/pkg/go/utils"
 
-	"encoding/json"
-
-	cb "github.com/bifrostcloud/protoc-gen-httpclient/pkg/go/client/circuit-breaker"
-
-	"io"
-
-	"io/ioutil"
-
 	"reflect"
 
 	"fmt"
 
-	"net/http"
+	"encoding/json"
 
-	"net/url"
+	"io/ioutil"
+
+	"strings"
 )
 
 type RequestManipulator func(*http.Request) error
@@ -43,10 +43,10 @@ func NewExampleServiceWithBasicAuth(username, password string) *ExampleServiceWi
 	}
 }
 
-func (srv *ExampleServiceWithBasicAuth) GetFoo(arg *StopRequest, rms []RequestManipulator, clientopts ...cb.Option) (*StopResponse, error) {
+func (srv *ExampleServiceWithBasicAuth) GetFoo(arg *FooRequest, rms []RequestManipulator, clientopts ...cb.Option) (*FooResponse, error) {
 	c := cb.New(clientopts...)
 
-	request, err := http.NewRequest(http.MethodGet, `http://localhost:8080foo`, nil)
+	request, err := http.NewRequest(http.MethodGet, `http://localhost:8080/foo`, nil)
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "[GET] request creation failed for ExampleService.GetFoo with input arg %v", arg)
 	}
@@ -71,7 +71,7 @@ func (srv *ExampleServiceWithBasicAuth) GetFoo(arg *StopRequest, rms []RequestMa
 	if err != nil {
 		return nil, err
 	}
-	result := &StopResponse{}
+	result := &FooResponse{}
 	err = json.NewDecoder(response.Body).Decode(result)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (srv *ExampleServiceWithBasicAuth) GetFoo(arg *StopRequest, rms []RequestMa
 	return result, nil
 }
 
-func (srv *ExampleServiceWithBasicAuth) PutBar(arg *VersionRequest, body io.Reader, rms []RequestManipulator, clientopts ...basic.Option) (*VersionResponse, error) {
+func (srv *ExampleServiceWithBasicAuth) PutBar(arg *BarRequest, body io.Reader, rms []RequestManipulator, clientopts ...basic.Option) (*BarResponse, error) {
 	c := basic.New(clientopts...)
 
 	request, err := http.NewRequest(http.MethodPut, `http://localhost:8080/bar`, body)
@@ -105,7 +105,7 @@ func (srv *ExampleServiceWithBasicAuth) PutBar(arg *VersionRequest, body io.Read
 	if err != nil {
 		return nil, err
 	}
-	result := &VersionResponse{}
+	result := &BarResponse{}
 	err = json.NewDecoder(response.Body).Decode(result)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func (srv *ExampleServiceWithBasicAuth) PutBar(arg *VersionRequest, body io.Read
 	return result, nil
 }
 
-func (srv *ExampleServiceWithBasicAuth) PostBaz(arg *VersionRequest, body io.Reader, rms []RequestManipulator, clientopts ...basic.Option) (*VersionResponse, error) {
+func (srv *ExampleServiceWithBasicAuth) PostBaz(arg *BazRequest, body io.Reader, rms []RequestManipulator, clientopts ...basic.Option) (*BazResponse, error) {
 	c := basic.New(clientopts...)
 
 	request, err := http.NewRequest(http.MethodPost, `http://localhost:8080/baz`, body)
@@ -152,7 +152,7 @@ func (srv *ExampleServiceWithBasicAuth) PostBaz(arg *VersionRequest, body io.Rea
 	if err != nil {
 		return nil, err
 	}
-	result := &VersionResponse{}
+	result := &BazResponse{}
 	err = json.NewDecoder(response.Body).Decode(result)
 	if err != nil {
 		return nil, err

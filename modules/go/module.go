@@ -134,12 +134,10 @@ func (p *plugin) Execute(targets map[string]pgs.File, packages map[string]pgs.Pa
 					}
 					ms = strings.Join(splitted, "")
 					upperCamelCaseMethodName := pgs.Name(strings.ToLower(clientOpts.Method)).UpperCamelCase().String() + ms
-
-					r := model.Method{}
-					r.UpperCamelCaseServiceName = srv.Name().UpperCamelCase().String()
-					r.UpperCamelCaseMethodName = upperCamelCaseMethodName
-
-					r.InputType = p.Context.Name(method.Input()).String()
+					m := model.Method{}
+					m.UpperCamelCaseServiceName = srv.Name().UpperCamelCase().String()
+					m.UpperCamelCaseMethodName = upperCamelCaseMethodName
+					m.InputType = p.Context.Name(method.Input()).String()
 
 					if !method.Input().BuildTarget() {
 						path := p.Context.ImportPath(method.Input()).String()
@@ -147,34 +145,21 @@ func (p *plugin) Execute(targets map[string]pgs.File, packages map[string]pgs.Pa
 							PackagePath: path,
 						}
 
-						r.InputType = p.Context.PackageName(method.Input()).String() + "." + p.Context.Name(method.Input()).String()
+						m.InputType = p.Context.PackageName(method.Input()).String() + "." + p.Context.Name(method.Input()).String()
 					}
-					inputFields := method.Input().Fields()
-					for _, field := range inputFields {
-						r.InputFields.Type = r.InputType
-						r.InputFields.FieldImport = append(r.InputFields.FieldImport, model.FieldImport{
-							Name: field.Name().UpperCamelCase().String(),
-							Tag:  field.Name().String(),
-						})
-						r.InputFields.Base = append(r.InputFields.Base, strings.ToLower(field.Name().String()))
-						r.InputFields.Lowercase = append(r.InputFields.Lowercase, strings.ToLower(field.Name().LowerCamelCase().String()))
-						r.InputFields.DotNotation = append(r.InputFields.DotNotation, strings.ToLower(field.Name().LowerDotNotation().String()))
-						spl := camelcase.Split(field.Name().UpperCamelCase().String())
-						r.InputFields.ParamCase = append(r.InputFields.ParamCase, strings.ToLower(strings.Join(spl, "-")))
-					}
-					r.OutputType = p.Context.Name(method.Output()).String()
-					r.Auth = strings.ToLower(srvOpts.Auth)
-					r.RequestOptions = clientOpts
+					m.OutputType = p.Context.Name(method.Output()).String()
+					m.Auth = strings.ToLower(srvOpts.Auth)
+					m.RequestOptions = clientOpts
 					if !method.Output().BuildTarget() {
 						path := p.Context.ImportPath(method.Output()).String()
 						imports[path] = model.Package{
 							PackagePath: path,
 						}
 
-						r.OutputType = p.Context.PackageName(method.Output()).String() + "." + p.Context.Name(method.Output()).String()
+						m.OutputType = p.Context.PackageName(method.Output()).String() + "." + p.Context.Name(method.Output()).String()
 					}
 
-					s.Methods = append(s.Methods, r)
+					s.Methods = append(s.Methods, m)
 				}
 				b.Services = append(b.Services, s)
 			}
@@ -189,7 +174,7 @@ func (p *plugin) Execute(targets map[string]pgs.File, packages map[string]pgs.Pa
 
 			p.OverwriteGeneratorTemplateFile(
 				name,
-				template.Lookup("Base_go"),
+				template.Lookup("Base"),
 				&b,
 			)
 
