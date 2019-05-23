@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package example;
+import "github.com/bifrostcloud/protoc-gen-httpclient/proto/types.proto";
+service ExampleService {
+    option (service_options) = {
+        auth :  "basic"
+        endpoint :  "http://localhost:8080"
+    };
+    rpc Foo (FooRequest) returns (FooResponse){
+        option (request_options) = {
+            client_type :  "circuit-breaker"
+            target: "/foo"
+            useragent: "My-Agent"
+            method : "get"
+        };
+    };
+    rpc Bar(BarRequest)returns (BarResponse){
+        option (request_options) = {
+            client_type :  "basic"
+            target: "/bar"
+            method : "put"
+        };
+    };
+    rpc Baz(BazRequest)returns (BazResponse){
+        option (request_options) = {
+            client_type :  "basic"
+            target: "/baz"
+            useragent: "My-Agent"
+            method : "post"
+            param : true
+        };
+    };
+}
+message FooRequest {
+	string status =1 ; 
+	string message =2; 
+	string some_other =3 ; 
+}
+message FooResponse {
+	string status =1 ; 
+	string message = 2 ; 
+}
+message BarRequest {
+    string status =1 ; 
+	bool boolean =2;  
+	uint32 integer =3;  
+}
+message BarResponse {
+	string response = 3 ; 
+}
+
+message BazRequest {
+    string status =1 ; 
+	bool boolean =2;  
+	uint32 integer =3;  
+}
+message BazResponse {
+	string response = 3 ; 
+}

@@ -1,0 +1,23 @@
+syntax = "proto3";
+option go_package = "pb";
+import "google/protobuf/descriptor.proto";
+
+message RequestOptions {
+    string client_type = 1;
+    string target = 2;
+    string useragent = 3;
+    string method = 4;
+    bool param =5;
+}
+
+message ServiceOptions {
+    string endpoint = 1;
+    string auth = 2;
+}
+extend google.protobuf.MethodOptions {
+    RequestOptions request_options = 999997;
+    // Param params = 999998;
+}
+extend google.protobuf.ServiceOptions {
+    ServiceOptions service_options = 999999;
+}

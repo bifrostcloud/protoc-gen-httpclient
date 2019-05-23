@@ -1,0 +1,114 @@
+{{ define "Method_go" }}
+{{ $upperCamelCaseServiceName := .UpperCamelCaseServiceName }}
+{{ $upperCamelCaseMethodName := .UpperCamelCaseMethodName }}
+{{ $inputType := .InputType }}
+{{ $inputFields := .InputFields }}
+{{ $outputType := .OutputType }}
+{{ $auth := .Auth }}
+{{ $opts := .RequestOptions }}
+{{ $type := $opts.ClientType }}
+{{ $target := $opts.Target }}
+{{ $useragent := $opts.Useragent }}
+{{ $method := $opts.Method }}
+{{ $params := $opts.Param }}
+
+    {{if eq $auth "basic"}}
+        {{if eq $method "GET"}}
+            {{if eq $type "circuit-breaker"}}
+                func (srv *{{$upperCamelCaseServiceName}}WithBasicAuth){{$upperCamelCaseMethodName}}(arg *{{$inputType}},rms []RequestManipulator,clientopts ...cb.Option )(*{{$outputType}},error){
+                    c := cb.New(clientopts...)
+            {{else if eq $type "basic"}}
+                func (srv *{{$upperCamelCaseServiceName}}WithBasicAuth){{$upperCamelCaseMethodName}}(arg *{{$inputType}},rms []RequestManipulator,clientopts ...basic.Option)(*{{$outputType}},error){
+                    c := basic.New(clientopts...)
+            {{end}}
+            request, err := http.NewRequest(http.MethodGet,`{{$target}}`, nil)
+            if err != nil {
+                return nil, stacktrace.Propagate(err, "[GET] request creation failed for {{$upperCamelCaseServiceName}}.{{$upperCamelCaseMethodName}} with input arg %v",arg)
+            }
+        {{else if eq $method "DELETE"}}
+           {{if eq $type "circuit-breaker"}}
+                func (srv *{{$upperCamelCaseServiceName}}WithBasicAuth){{$upperCamelCaseMethodName}}(arg *{{$inputType}},rms []RequestManipulator,clientopts ...cb.Option )(*{{$outputType}},error){
+                    c := cb.New(clientopts...)
+            {{else if eq $type "basic"}}
+                func (srv *{{$upperCamelCaseServiceName}}WithBasicAuth){{$upperCamelCaseMethodName}}(arg *{{$inputType}},rms []RequestManipulator,clientopts ...basic.Option)(*{{$outputType}},error){
+                    c := basic.New(clientopts...)
+            {{end}}
+            request, err := http.NewRequest(http.MethodDelete,`{{$target}}`, nil)
+            if err != nil {
+                return nil, stacktrace.Propagate(err, "[DELETE] request creation failed for {{$upperCamelCaseServiceName}}.{{$upperCamelCaseMethodName}} with input arg %v",arg)
+            }
+        {{ else if eq $method "POST"}}
+            {{if eq $type "circuit-breaker"}}
+                func (srv *{{$upperCamelCaseServiceName}}WithBasicAuth){{$upperCamelCaseMethodName}}(arg *{{$inputType}},body io.Reader,rms []RequestManipulator,clientopts ...cb.Option )(*{{$outputType}},error){
+                    c := cb.New(clientopts...)
+            {{else if eq $type "basic"}}
+                func (srv *{{$upperCamelCaseServiceName}}WithBasicAuth){{$upperCamelCaseMethodName}}(arg *{{$inputType}},body io.Reader,rms []RequestManipulator,clientopts ...basic.Option)(*{{$outputType}},error){
+                    c := basic.New(clientopts...)
+            {{end}}
+            request, err := http.NewRequest(http.MethodPost,`{{$target}}`, body)
+            if err != nil {
+                return nil, stacktrace.Propagate(err, "[POST] request creation failed for {{$upperCamelCaseServiceName}}.{{$upperCamelCaseMethodName}} with input arg %v",arg)
+            }
+        {{ else if eq $method "PUT"}}
+            {{if eq $type "circuit-breaker"}}
+                func (srv *{{$upperCamelCaseServiceName}}WithBasicAuth){{$upperCamelCaseMethodName}}(arg *{{$inputType}},body io.Reader,rms []RequestManipulator,clientopts ...cb.Option )(*{{$outputType}},error){
+                    c := cb.New(clientopts...)
+            {{else if eq $type "basic"}}
+                func (srv *{{$upperCamelCaseServiceName}}WithBasicAuth){{$upperCamelCaseMethodName}}(arg *{{$inputType}},body io.Reader,rms []RequestManipulator,clientopts ...basic.Option)(*{{$outputType}},error){
+                    c := basic.New(clientopts...)
+            {{end}}
+            request, err := http.NewRequest(http.MethodPut,`{{$target}}`, body)
+            if err != nil {
+                return nil, stacktrace.Propagate(err, "[PUT] request creation failed for {{$upperCamelCaseServiceName}}.{{$upperCamelCaseMethodName}} with input arg %v",arg)
+            }
+        {{end}}
+            {{if  $params}}
+            	if body == nil {
+                    if request.Form == nil {
+                        request.Form = url.Values{}
+                    }
+                    e := reflect.ValueOf(&arg).Elem()
+                    for i := 0; i < e.NumField(); i++ {
+                        key := e.Type().Field(i).Name
+                        if strings.HasPrefix(key, "XXX") {
+                            continue
+                        }
+                        value := e.Field(i).Interface()
+                        request.Form.Set(key, fmt.Sprintf("%v", value))
+                    }
+                    request.Body = ioutil.NopCloser(strings.NewReader(request.Form.Encode()))
+                    request.ContentLength = int64(len(request.Form.Encode()))
+                }
+            {{else}}
+                jsonVal, err := json.Marshal(*arg)
+                if err != nil {
+                    return nil, stacktrace.Propagate(err, "request marshalling to json failed for {{$upperCamelCaseServiceName}}.{{$upperCamelCaseMethodName}} with input arg %v",arg)
+                }
+                request.Body = ioutil.NopCloser(strings.NewReader(string(jsonVal)))                
+            {{end}}
+            {{if $useragent }}
+            request.Header.Set("User-Agent","{{$useragent}}")
+            {{end}}
+            basicauth := utils.BasicAuth(srv.Username, srv.Password)
+            request.Header.Set("Authorization", "Basic "+basicauth)
+            for _, r := range rms {
+                err := r(request)
+                if err != nil {
+                    return nil, stacktrace.Propagate(err, "request modification failed for {{$upperCamelCaseServiceName}}.{{$upperCamelCaseMethodName}} with input arg %v",arg)
+                }
+            }
+            response, err := c.Do(request)
+            if err != nil {
+                return nil, err
+            }
+            result := &{{$outputType}}{}
+            err = json.NewDecoder(response.Body).Decode(result)
+            if err != nil {
+                return nil, err
+            }
+            return result,nil
+        }
+    {{end}}
+{{ end }}
+
+

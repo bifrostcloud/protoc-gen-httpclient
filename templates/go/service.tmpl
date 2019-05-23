@@ -1,0 +1,22 @@
+{{ define "Service_go" }}
+{{ $upperCamelCaseServiceName := .UpperCamelCaseServiceName }}
+{{ $auth := .Auth }}
+	{{if eq $auth "basic"}}
+		type {{$upperCamelCaseServiceName}}WithBasicAuth struct {
+			Endpoint string
+			Username string
+			Password string
+		}
+		// New{{$upperCamelCaseServiceName}}WithBasicAuth - sets up a new {{$upperCamelCaseServiceName}} client with basic authentication scheme
+		func New{{$upperCamelCaseServiceName}}WithBasicAuth(username, password string) *{{$upperCamelCaseServiceName}}WithBasicAuth {
+			return &{{$upperCamelCaseServiceName}}WithBasicAuth{
+				Username: username,
+				Password: password,
+			}
+		}
+	{{end}}
+
+{{ range .Methods -}}
+ {{ template "Method_go" . }}
+{{end}}
+{{ end }}
