@@ -32,8 +32,8 @@ This library aims to help with language agnostic http-client generation through 
 - **Circuit-Breaking and Custom Client Fallback** :  In case there are too many failing requests are , or the number of requests sent are above a configured threshold the client "opens the circuit" for a short period of time. This prevents any more requests from being made and gives the downstream systems recovery time.
 - **Client Customization** : all requests are variadic functions. Method used for customizing the request are defined for their respective client types :
 
-- `circuit-breaker client` : pkg/go/client/circuit-breaker/client.go
-- `basic client` : pkg/go/client/basic/client.go
+`circuit-breaker client` : pkg/go/client/circuit-breaker/client.go
+`basic client` : pkg/go/client/basic/client.go
 
 ## Directory Structure
 
